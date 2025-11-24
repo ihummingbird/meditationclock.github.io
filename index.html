@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meditation OS</title>
     
     <link rel="stylesheet" href="core/global.css">
@@ -21,10 +21,9 @@
             </button>
         </div>
 
-        <div class="nav-brand">Meditation Clock</div>
+        <div class="nav-brand">Meditation OS</div>
 
         <div class="nav-right">
-            <!-- New Fullscreen Button -->
             <button id="btn-fullscreen" class="nav-btn" title="Enter Focus Mode">
                 ⛶
             </button>
@@ -34,7 +33,7 @@
         </div>
     </nav>
 
-    <!-- GHOST EXIT BUTTON (Hidden by default, appears in Fullscreen) -->
+    <!-- GHOST EXIT BUTTON (Appears in Fullscreen) -->
     <button id="btn-exit-fs">
         Exit Focus ×
     </button>
@@ -60,14 +59,12 @@
         <div id="settings-content"></div>
     </div>
 
-    <!-- NEW: SESSION CONTROL (Bottom Drawer) -->
-    <!-- The "Handle" is always visible at the bottom -->
+    <!-- SESSION CONTROL (Bottom Drawer) -->
     <div id="session-handle" class="session-handle">
         <div class="handle-bar"></div>
         <span id="session-status-text">Start Session</span>
     </div>
 
-    <!-- The Panel slides up when the handle is clicked -->
     <div id="session-panel" class="bottom-drawer">
         <div class="session-content">
             <div id="session-timer">00:00:00</div>

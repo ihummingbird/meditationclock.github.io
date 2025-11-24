@@ -1,8 +1,8 @@
 const Engine = {
-    // --- 1. EXISTING REGISTRY ---
+    // 1. REGISTRY
     themes: [
-        { id: 'simple', name: 'Simple Digital', accentColor: '#333333', image: '' },
-        { id: 'breathe', name: 'Deep Breathing', accentColor: '#666666', image: '' }
+        { id: 'simple', name: 'Simple Digital' },
+        { id: 'breathe', name: 'Deep Breathing' }
     ],
 
     state: {
@@ -10,11 +10,12 @@ const Engine = {
         themeSettings: {}
     },
     
-    // --- NEW: SESSION STATE ---
+    // NEW: 3-Stage Session State
     session: {
-        active: false,
+        active: false,    // Is the timer ticking?
+        finished: false,  // Did we just finish and are showing the result?
         startTime: null,
-        interval: null
+        elapsed: 0        // Holds the final duration
     },
 
     currentThemeObj: null,
@@ -22,12 +23,15 @@ const Engine = {
     dom: {
         stage: document.getElementById('stage'),
         cssLink: document.getElementById('theme-stylesheet'),
+        
         libraryDrawer: document.getElementById('library-drawer'),
         settingsDrawer: document.getElementById('settings-panel'),
         themeGrid: document.getElementById('theme-grid'),
         settingsContent: document.getElementById('settings-content'),
         
-        // NEW DOM ELEMENTS
+        btnFullscreen: document.getElementById('btn-fullscreen'),
+        btnExitFs: document.getElementById('btn-exit-fs'),
+
         sessionHandle: document.getElementById('session-handle'),
         sessionPanel: document.getElementById('session-panel'),
         sessionTimer: document.getElementById('session-timer'),
@@ -38,93 +42,171 @@ const Engine = {
     init: function() {
         this.loadState();
         
-        // Existing Listeners
-        document.getElementById('btn-library').addEventListener('click', () => {
-            this.dom.libraryDrawer.classList.add('active');
-            this.dom.settingsDrawer.classList.remove('active');
-            this.closeSessionPanel(); // Close bottom panel if open
-        });
-        document.getElementById('btn-close-library').addEventListener('click', () => this.dom.libraryDrawer.classList.remove('active'));
+        // Navigation Listeners
+        document.getElementById('btn-library').addEventListener('click', () => this.toggleDrawer('library'));
+        document.getElementById('btn-close-library').addEventListener('click', () => this.closeDrawers());
 
-        document.getElementById('btn-settings').addEventListener('click', () => {
-            this.dom.settingsDrawer.classList.add('active');
-            this.dom.libraryDrawer.classList.remove('active');
-            this.closeSessionPanel(); // Close bottom panel if open
-        });
-        document.getElementById('btn-close-settings').addEventListener('click', () => this.dom.settingsDrawer.classList.remove('active'));
+        document.getElementById('btn-settings').addEventListener('click', () => this.toggleDrawer('settings'));
+        document.getElementById('btn-close-settings').addEventListener('click', () => this.closeDrawers());
 
-        // --- NEW: SESSION LISTENERS ---
+        // Fullscreen Listeners
+        this.dom.btnFullscreen.addEventListener('click', () => this.enterFullscreen());
+        this.dom.btnExitFs.addEventListener('click', () => this.exitFullscreen());
         
-        // 1. Click Handle to toggle Panel
+        // Listen for ANY fullscreen change (Standard, WebKit, Moz, MS)
+        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(
+            eventType => document.addEventListener(eventType, () => this.handleFullscreenChange(), false)
+        );
+
+        // Session Listeners
         this.dom.sessionHandle.addEventListener('click', () => {
             this.dom.sessionPanel.classList.toggle('active');
-            // Close other drawers
-            this.dom.libraryDrawer.classList.remove('active');
-            this.dom.settingsDrawer.classList.remove('active');
+            this.closeDrawers();
         });
 
-        // 2. Click Main Button to Start/Stop
         this.dom.sessionBtn.addEventListener('click', () => {
-            this.toggleSession();
+            this.handleSessionClick();
         });
 
+        // App Start
         this.buildLibraryUI();
         this.loadTheme(this.state.activeThemeId);
         this.startClock();
     },
 
-    // --- NEW: SESSION LOGIC ---
+    // --- ROBUST SESSION LOGIC (3-Stage) ---
     
-    toggleSession: function() {
-        if (!this.session.active) {
-            // START SESSION
-            this.session.active = true;
-            this.session.startTime = Date.now();
+    handleSessionClick: function() {
+        const s = this.session;
+
+        // CASE 1: Start (Idle -> Running)
+        if (!s.active && !s.finished) {
+            s.active = true;
+            s.startTime = Date.now();
             
-            // UI Updates
+            // UI
             this.dom.sessionBtn.innerText = "Stop Session";
             this.dom.sessionBtn.classList.add('stop-mode');
-            this.dom.sessionHandle.classList.add('meditating'); // Turns Green
+            this.dom.sessionHandle.classList.add('meditating');
             this.dom.sessionText.innerText = "In Progress";
+            this.dom.sessionTimer.classList.remove('finished'); // Remove green
             
-            // Auto-close the panel so you can meditate
+            // Auto close panel
             setTimeout(() => {
                 this.dom.sessionPanel.classList.remove('active');
             }, 500);
+            return;
+        }
 
-        } else {
-            // STOP SESSION
-            this.session.active = false;
-            this.session.startTime = null;
+        // CASE 2: Stop (Running -> Finished/Result)
+        if (s.active) {
+            s.active = false;
+            s.finished = true;
+            s.elapsed = Date.now() - s.startTime; // Freeze time logic
             
-            // UI Updates
-            this.dom.sessionBtn.innerText = "Begin Meditation";
+            // UI
+            this.dom.sessionBtn.innerText = "Start New Session";
             this.dom.sessionBtn.classList.remove('stop-mode');
-            this.dom.sessionHandle.classList.remove('meditating'); // Removes Green
-            this.dom.sessionText.innerText = "Start Session";
+            this.dom.sessionHandle.classList.remove('meditating');
+            this.dom.sessionText.innerText = "Session Complete";
+            this.dom.sessionTimer.classList.add('finished'); // Turn Text Green
+            this.dom.sessionTimer.innerText = this.formatTime(s.elapsed); // Show final locked time
+            return;
+        }
+
+        // CASE 3: Reset (Finished -> Idle)
+        if (s.finished) {
+            s.finished = false;
+            s.elapsed = 0;
+            s.startTime = null;
+            
+            // UI
+            this.dom.sessionBtn.innerText = "Begin Meditation";
             this.dom.sessionTimer.innerText = "00:00:00";
+            this.dom.sessionTimer.classList.remove('finished');
+            this.dom.sessionText.innerText = "Start Session";
+            return;
         }
     },
 
-    closeSessionPanel: function() {
+    // --- ROBUST FULLSCREEN LOGIC (iPhone Support) ---
+    
+    enterFullscreen: function() {
+        const elem = document.documentElement;
+        
+        // Try all prefixes
+        const req = elem.requestFullscreen || 
+                    elem.webkitRequestFullscreen || 
+                    elem.mozRequestFullScreen || 
+                    elem.msRequestFullscreen;
+
+        // Force UI update immediately (Better feel on iPhone even if API fails)
+        document.body.classList.add('fullscreen-mode');
+        this.closeDrawers();
+        this.dom.sessionPanel.classList.remove('active');
+
+        if (req) {
+            req.call(elem).catch(err => console.log("Fullscreen blocked or not supported:", err));
+        }
+    },
+
+    exitFullscreen: function() {
+        // Try all prefixes
+        const exit = document.exitFullscreen || 
+                     document.webkitExitFullscreen || 
+                     document.mozCancelFullScreen || 
+                     document.msExitFullscreen;
+
+        if (exit) {
+            exit.call(document);
+        }
+        
+        // We rely on the event listener to remove the class, 
+        // BUT if browser denies exit, we force UI back anyway:
+        document.body.classList.remove('fullscreen-mode');
+    },
+
+    handleFullscreenChange: function() {
+        const isFullscreen = document.fullscreenElement || 
+                             document.webkitFullscreenElement || 
+                             document.mozFullScreenElement || 
+                             document.msFullscreenElement;
+
+        if (!isFullscreen) {
+            document.body.classList.remove('fullscreen-mode');
+        } else {
+            document.body.classList.add('fullscreen-mode');
+        }
+    },
+
+    // --- HELPER: TIME FORMATTER ---
+    formatTime: function(ms) {
+        const totalSecs = Math.floor(ms / 1000);
+        const h = Math.floor(totalSecs / 3600);
+        const m = Math.floor((totalSecs % 3600) / 60);
+        const s = totalSecs % 60;
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${pad(h)}:${pad(m)}:${pad(s)}`;
+    },
+
+    // --- DRAWERS ---
+    toggleDrawer: function(type) {
+        if (type === 'library') {
+            this.dom.libraryDrawer.classList.add('active');
+            this.dom.settingsDrawer.classList.remove('active');
+        } else {
+            this.dom.settingsDrawer.classList.add('active');
+            this.dom.libraryDrawer.classList.remove('active');
+        }
         this.dom.sessionPanel.classList.remove('active');
     },
 
-    // --- HELPER: FORMAT TIME ---
-    getFormattedDuration: function() {
-        if (!this.session.startTime) return "00:00:00";
-        
-        const diff = Date.now() - this.session.startTime;
-        const seconds = Math.floor((diff / 1000) % 60);
-        const minutes = Math.floor((diff / (1000 * 60)) % 60);
-        const hours = Math.floor((diff / (1000 * 60 * 60)));
-
-        const pad = (num) => String(num).padStart(2, '0');
-        return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    closeDrawers: function() {
+        this.dom.libraryDrawer.classList.remove('active');
+        this.dom.settingsDrawer.classList.remove('active');
     },
 
-    // --- EXISTING LOGIC ---
-
+    // --- LIBRARY ---
     buildLibraryUI: function() {
         const container = this.dom.themeGrid;
         container.innerHTML = ''; 
@@ -217,9 +299,8 @@ const Engine = {
 
     startClock: function() { setInterval(() => this.tick(), 1000); },
 
-    // UPDATED TICK FUNCTION
+    // UPDATED TICK 
     tick: function() {
-        // 1. Update Clock Theme
         if (this.currentThemeObj) {
             const now = new Date();
             this.currentThemeObj.update({
@@ -229,9 +310,11 @@ const Engine = {
             });
         }
 
-        // 2. Update Session Timer (If active)
+        // Only update session timer if Active (Running)
+        // If finished, it's static (Green), so we don't update it here.
         if (this.session.active) {
-            this.dom.sessionTimer.innerText = this.getFormattedDuration();
+            const diff = Date.now() - this.session.startTime;
+            this.dom.sessionTimer.innerText = this.formatTime(diff);
         }
     }
 };

@@ -5,10 +5,11 @@
     --border-active: #ffffff;
     --text-main: #ffffff;
     --text-dim: #666666;
+    --success: #50fa7b; /* The Matrix Green */
 }
 
 /* RESET */
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
     margin: 0;
@@ -36,6 +37,7 @@ body {
     z-index: 1500;
     background: rgba(5, 5, 5, 0.8);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* iPhone Glass support */
     border-bottom: 1px solid var(--border-dim);
     transition: transform 0.5s ease, opacity 0.5s ease;
 }
@@ -51,16 +53,13 @@ body {
     transform: translateX(-50%);
 }
 
-.nav-right {
-    display: flex;
-    gap: 10px;
-}
+.nav-right { display: flex; gap: 10px; }
 
 .nav-btn {
     background: transparent;
     border: 1px solid var(--border-dim);
     color: var(--text-dim);
-    padding: 8px 12px; /* Slightly smaller padding */
+    padding: 8px 12px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
@@ -80,47 +79,39 @@ body {
     bottom: 30px;
     right: 30px;
     z-index: 9999;
-    
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
     padding: 10px 20px;
-    border-radius: 30px; /* Pill shape */
+    border-radius: 30px;
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
     cursor: pointer;
-    
-    /* THE GHOST EFFECT */
-    opacity: 0; /* Hidden by default */
-    pointer-events: none; /* Can't click it when hidden */
+    opacity: 0;
+    pointer-events: none;
     transform: translateY(20px);
     transition: all 0.5s ease;
 }
 
-/* --- FULLSCREEN MODE STATES --- */
-
-/* When body has class 'fullscreen-mode'... */
+/* FULLSCREEN STATES */
 body.fullscreen-mode #navbar {
-    transform: translateY(-100%); /* Slide navbar up and away */
+    transform: translateY(-100%);
     opacity: 0;
     pointer-events: none;
 }
 
-/* Show the exit button ONLY in fullscreen mode */
 body.fullscreen-mode #btn-exit-fs {
-    opacity: 0.1; /* Very faint (10%) */
+    opacity: 0.1;
     pointer-events: auto;
     transform: translateY(0);
 }
 
-/* When hovering/tapping the exit button, make it fully visible */
 body.fullscreen-mode #btn-exit-fs:hover {
     opacity: 1;
     background: rgba(255,255,255,0.1);
     border-color: white;
 }
-
 
 /* --- DRAWERS --- */
 .drawer {
@@ -135,7 +126,7 @@ body.fullscreen-mode #btn-exit-fs:hover {
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--border-dim); /* Default border logic */
+    border-right: 1px solid var(--border-dim);
 }
 .right-drawer { border-left: 1px solid var(--border-dim); border-right: none; }
 
@@ -164,13 +155,13 @@ body.fullscreen-mode #btn-exit-fs:hover {
 .grid-container {
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Tighter gap */
+    gap: 8px;
     overflow-y: auto;
 }
 
 .theme-tile {
     width: 100%;
-    height: 60px; /* Smaller, sleeker height */
+    height: 60px;
     display: flex;
     align-items: center;
     padding: 0 20px;
@@ -191,39 +182,10 @@ body.fullscreen-mode #btn-exit-fs:hover {
     background: #000;
 }
 
-.tile-text {
-    font-size: 13px;
-    color: var(--text-dim);
-    font-weight: 500;
-}
+.tile-text { font-size: 13px; color: var(--text-dim); font-weight: 500; }
+.theme-tile.active .tile-text { color: white; }
 
-.theme-tile.active .tile-text {
-    color: white;
-}
-
-/* --- SETTINGS --- */
-.setting-item { margin-bottom: 30px; }
-.setting-label {
-    display: block;
-    color: var(--text-dim);
-    font-size: 10px;
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; height: 12px; width: 12px;
-    background: #ffffff; cursor: pointer; margin-top: -5px;
-}
-input[type=range]::-webkit-slider-runnable-track {
-    width: 100%; height: 2px; cursor: pointer; background: #333;
-}
-
-/* --- NEW: SESSION MANAGER (Bottom) --- */
-
-/* The Clickable Pill at the bottom */
+/* --- SESSION MANAGER --- */
 .session-handle {
     position: fixed;
     bottom: 0;
@@ -235,7 +197,7 @@ input[type=range]::-webkit-slider-runnable-track {
     border: 1px solid #333;
     border-bottom: none;
     border-radius: 12px 12px 0 0;
-    z-index: 2200; /* Above everything */
+    z-index: 2200;
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -244,12 +206,8 @@ input[type=range]::-webkit-slider-runnable-track {
     transition: all 0.3s ease;
 }
 
-.session-handle:hover {
-    background: #151515;
-    height: 45px; /* Subtle pop up on hover */
-}
+.session-handle:hover { background: #151515; height: 45px; }
 
-/* THE GREEN LINE (The visual feedback) */
 .handle-bar {
     width: 40px;
     height: 3px;
@@ -266,22 +224,13 @@ input[type=range]::-webkit-slider-runnable-track {
     color: #666;
 }
 
-/* ACTIVE STATE (When Meditating) */
-.session-handle.meditating {
-    border-color: #50fa7b; /* The Green Border */
-    box-shadow: 0 -5px 20px rgba(80, 250, 123, 0.1);
-}
-
+/* Meditating State (Green Line) */
 .session-handle.meditating .handle-bar {
-    background: #50fa7b; /* The Green Line */
-    box-shadow: 0 0 10px #50fa7b; /* Glow */
+    background: var(--success);
+    box-shadow: 0 0 10px var(--success);
 }
+.session-handle.meditating #session-status-text { color: var(--success); }
 
-.session-handle.meditating #session-status-text {
-    color: #50fa7b;
-}
-
-/* THE DRAWER ITSELF */
 .bottom-drawer {
     position: fixed;
     bottom: 0;
@@ -291,21 +240,15 @@ input[type=range]::-webkit-slider-runnable-track {
     background: #050505;
     border-top: 1px solid #333;
     z-index: 2100;
-    transform: translateY(100%); /* Hidden by default */
+    transform: translateY(100%);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     justify-content: center;
     align-items: center;
 }
+.bottom-drawer.active { transform: translateY(0); }
 
-.bottom-drawer.active {
-    transform: translateY(0);
-}
-
-/* INSIDE THE DRAWER */
-.session-content {
-    text-align: center;
-}
+.session-content { text-align: center; }
 
 #session-timer {
     font-family: 'JetBrains Mono', monospace;
@@ -313,6 +256,12 @@ input[type=range]::-webkit-slider-runnable-track {
     color: white;
     margin-bottom: 20px;
     font-weight: 700;
+    transition: color 0.3s ease;
+}
+
+/* When Finished */
+#session-timer.finished {
+    color: var(--success);
 }
 
 #btn-session-toggle {
@@ -327,18 +276,24 @@ input[type=range]::-webkit-slider-runnable-track {
     border-radius: 50px;
     transition: all 0.2s;
 }
+#btn-session-toggle:hover { background: white; color: black; }
 
-#btn-session-toggle:hover {
-    background: white;
-    color: black;
-}
+/* Stop Mode */
+#btn-session-toggle.stop-mode { border-color: #ff5f57; color: #ff5f57; }
+#btn-session-toggle.stop-mode:hover { background: #ff5f57; color: white; }
 
-/* Button style when active */
-#btn-session-toggle.stop-mode {
-    border-color: #ff5f57;
-    color: #ff5f57;
+/* --- SETTINGS --- */
+.setting-item { margin-bottom: 30px; }
+.setting-label {
+    display: block;
+    color: var(--text-dim);
+    font-size: 10px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
-#btn-session-toggle.stop-mode:hover {
-    background: #ff5f57;
-    color: white;
+input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; height: 12px; width: 12px; background: #ffffff; cursor: pointer; margin-top: -5px;
 }
+input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: #333; }
