@@ -21,7 +21,7 @@
             </button>
         </div>
 
-        <div class="nav-brand">Meditation OS</div>
+        <div class="nav-brand">Meditation Clock</div>
 
         <div class="nav-right">
             <!-- New Fullscreen Button -->
@@ -58,6 +58,21 @@
             <button id="btn-close-settings" class="close-btn">×</button>
         </div>
         <div id="settings-content"></div>
+    </div>
+
+    <!-- NEW: SESSION CONTROL (Bottom Drawer) -->
+    <!-- The "Handle" is always visible at the bottom -->
+    <div id="session-handle" class="session-handle">
+        <div class="handle-bar"></div>
+        <span id="session-status-text">Start Session</span>
+    </div>
+
+    <!-- The Panel slides up when the handle is clicked -->
+    <div id="session-panel" class="bottom-drawer">
+        <div class="session-content">
+            <div id="session-timer">00:00:00</div>
+            <button id="btn-session-toggle">BEGIN MEDITATION</button>
+        </div>
     </div>
 
     <script src="core/engine.js"></script>

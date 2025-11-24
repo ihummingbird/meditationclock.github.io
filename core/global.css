@@ -220,3 +220,125 @@ input[type=range]::-webkit-slider-thumb {
 input[type=range]::-webkit-slider-runnable-track {
     width: 100%; height: 2px; cursor: pointer; background: #333;
 }
+
+/* --- NEW: SESSION MANAGER (Bottom) --- */
+
+/* The Clickable Pill at the bottom */
+.session-handle {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 40px;
+    background: #0a0a0a;
+    border: 1px solid #333;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    z-index: 2200; /* Above everything */
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.session-handle:hover {
+    background: #151515;
+    height: 45px; /* Subtle pop up on hover */
+}
+
+/* THE GREEN LINE (The visual feedback) */
+.handle-bar {
+    width: 40px;
+    height: 3px;
+    background: #444;
+    border-radius: 2px;
+    margin-bottom: 5px;
+    transition: background 0.5s ease, box-shadow 0.5s ease;
+}
+
+#session-status-text {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #666;
+}
+
+/* ACTIVE STATE (When Meditating) */
+.session-handle.meditating {
+    border-color: #50fa7b; /* The Green Border */
+    box-shadow: 0 -5px 20px rgba(80, 250, 123, 0.1);
+}
+
+.session-handle.meditating .handle-bar {
+    background: #50fa7b; /* The Green Line */
+    box-shadow: 0 0 10px #50fa7b; /* Glow */
+}
+
+.session-handle.meditating #session-status-text {
+    color: #50fa7b;
+}
+
+/* THE DRAWER ITSELF */
+.bottom-drawer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 250px;
+    background: #050505;
+    border-top: 1px solid #333;
+    z-index: 2100;
+    transform: translateY(100%); /* Hidden by default */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.bottom-drawer.active {
+    transform: translateY(0);
+}
+
+/* INSIDE THE DRAWER */
+.session-content {
+    text-align: center;
+}
+
+#session-timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 4rem;
+    color: white;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+#btn-session-toggle {
+    background: transparent;
+    border: 1px solid #ffffff;
+    color: white;
+    padding: 15px 40px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 50px;
+    transition: all 0.2s;
+}
+
+#btn-session-toggle:hover {
+    background: white;
+    color: black;
+}
+
+/* Button style when active */
+#btn-session-toggle.stop-mode {
+    border-color: #ff5f57;
+    color: #ff5f57;
+}
+#btn-session-toggle.stop-mode:hover {
+    background: #ff5f57;
+    color: white;
+}
